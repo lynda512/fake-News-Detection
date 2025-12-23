@@ -1,93 +1,169 @@
-# fakeNewsDetector
 
+# Fake News Detection Using Large Language Models
 
-this is new
-## Getting started
+This repository contains the code and experiments for the project **"Fake News Detection Using Large Language Models"**, which investigates the performance of traditional machine learning models, large language models (LLMs), and hybrid approaches on the **LIAR** dataset for automatic fake news detection.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Project Overview
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+The project explores whether LLMs outperform traditional ML algorithms in fake news detection and whether hybrid models that combine LLMs with smaller or traditional models can improve performance and efficiency. The study focuses on multi-class and binary classification of political statements into truthfulness categories (e.g., true, mostly-true, false, pants-fire).  
 
-## Add your files
+## Dataset
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+The project uses the **LIAR** benchmark dataset by Wang, which contains 12.8K short political statements collected from PolitiFact. Each record includes:
+- Statement text  
+- Truthfulness label (true, mostly-true, half-true, barely-true, false, pants-fire)  
+- Speaker metadata (name, job title, party, state)  
+- Credibility history counts (e.g., false count, pants-on-fire count)
+
+The dataset is split into:
+- Train: 10,296 samples (80.0%)  
+- Validation: 1,284 samples (10.0%)  
+- Test: 1,267 samples (9.8%)
+
+## Methodology
+
+### Preprocessing and Feature Engineering
+
+Key preprocessing and feature engineering steps include:
+
+- Text cleaning of the *statement* field (lowercasing, URL and symbol removal, stop word removal, lemmatization).  
+- Handling missing values and dropping irrelevant columns (e.g., IDs); rare party labels grouped into **Others**.  
+- Label encoding of categorical truth labels for supervised learning.  
+- Sentiment analysis using TextBlob to derive sentiment scores for each statement.  
+- Creation of a **False Ratio** feature using the speaker’s credibility history counts (false and pants-on-fire vs total).  
+- TF–IDF vectorization for textual features.
+
+### Models
+
+The following models are implemented and evaluated:
+
+- **Traditional ML models**
+  - Logistic Regression (multi-class)  
+  - Random Forest (multi-class)
+
+- **Large Language Models (LLMs) – LLaMA 3.2 1B**
+  - Causal language modeling with **AutoModelForCausalLM** and supervised fine-tuning (SFTTrainer, prompt-based).  
+  - Sequence classification with **AutoModelForSequenceClassification** (multi-class).  
+  - Sequence classification with **AutoModelForSequenceClassification** (binary: true vs false).
+
+Hyperparameters include batch size 16, learning rate \(5 \times 10^{-5}\), weight decay 0.3, warmup steps, and early stopping for the sequence-classification setup.
+
+## Results
+
+### Traditional Models
+
+- **Logistic Regression (multi-class)**  
+  - Test accuracy: **28%**.
+
+- **Random Forest (multi-class)**  
+  - Test accuracy: **34%** (highest among all evaluated models).  
+  - Weighted F1-score: **0.31**.
+
+Random Forest shows better overall performance and robustness than logistic regression, despite class imbalance in the LIAR dataset.
+
+### LLaMA 3.2 1B – Multi-class
+
+- **CausalLM + SFT (prompt-based)**  
+  - Test accuracy: **25%**.  
+  - High precision on some classes but very low recall for minority labels (e.g., pants-fire).  
+
+- **AutoModelForSequenceClassification (multi-class)**  
+  - Test accuracy: **24%**.  
+  - More uniform precision/recall across classes but still struggles with underrepresented labels.
+
+### LLaMA 3.2 1B – Binary
+
+- **AutoModelForSequenceClassification (binary true/false)**  
+  - Test accuracy: **60%**, around 10% above random baseline for two classes.
+
+Overall, conventional models (especially Random Forest) outperform the LLaMA-based approaches on the multi-class LIAR setup in this project.
+
+## Key Findings
+
+- Conventional models remain competitive and can outperform lightweight LLM setups on structured, imbalanced datasets like LIAR.  
+- Class imbalance (e.g., underrepresented pants-fire class) strongly degrades performance, particularly recall for minority labels.  
+- Reformulating the task as binary classification improves accuracy for LLaMA 3.2 1B but still does not surpass the Random Forest in the multi-class setting in terms of relative performance to chance.
+
+## Future Work
+
+Potential future directions include:
+
+- Designing **hybrid frameworks** where:
+  - Traditional models handle the bulk of straightforward cases.  
+  - LLMs act as second-stage experts for ambiguous or hard examples.  
+
+- Addressing class imbalance via:
+  - Data augmentation (e.g., SMOTE or GAN-based synthesis).  
+  - Class-weighted losses and custom sampling strategies.
+
+- Improving LLM performance with domain-specific fine-tuning on political fact-checking corpora and integrating external retrieval.  
+
+- Enhancing interpretability using attention visualization, SHAP/LIME, and human-in-the-loop workflows for sensitive or ambiguous predictions.
+
+## Folder Structure (Suggested)
 
 ```
-cd existing_repo
-git remote add origin https://git.fim.uni-passau.de/padas/24ws-dsl/team01/fakenewsdetector.git
-git branch -M main
-git push -uf origin main
+.
+├── data/
+│   ├── liar_train.csv
+│   ├── liar_val.csv
+│   └── liar_test.csv
+├── notebooks/
+│   ├── eda.ipynb
+│   ├── traditional_models.ipynb
+│   └── llama_experiments.ipynb
+├── src/
+│   ├── preprocessing.py
+│   ├── features.py
+│   ├── train_traditional.py
+│   ├── train_llama_causallm.py
+│   └── train_llama_seqcls.py
+├── results/
+│   ├── metrics_traditional.json
+│   ├── metrics_llama_multiclass.json
+│   └── metrics_llama_binary.json
+└── README.md
 ```
 
-## Integrate with your tools
+## Requirements
 
-- [ ] [Set up project integrations](https://git.fim.uni-passau.de/padas/24ws-dsl/team01/fakenewsdetector/-/settings/integrations)
+Main dependencies used in the project:
 
-## Collaborate with your team
+- Python 3.x  
+- pandas, numpy, scikit-learn  
+- TextBlob  
+- matplotlib / seaborn (for plots)  
+- Hugging Face `transformers`, `datasets`, and `trl` (for SFTTrainer)  
+- torch
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+## How to Run
 
-## Test and Deploy
+1. Install dependencies:
 
-Use the built-in continuous integration in GitLab.
+   ```
+   pip install -r requirements.txt
+   ```
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+2. Prepare the LIAR dataset (TSV → CSV) and place splits under `data/` as expected by the scripts.
 
-***
+3. Run traditional models:
 
-# Editing this README
+   ```
+   python src/train_traditional.py
+   ```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+4. Run LLaMA 3.2 1B experiments (adjust model path/checkpoint as needed):
 
-## Suggestions for a good README
+   ```
+   python src/train_llama_causallm.py
+   python src/train_llama_seqcls.py
+   ```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+5. Inspect metrics and plots in the `results/` and `notebooks/` directories.
 
-## Name
-Choose a self-explaining name for your project.
+## Citation
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+If you use this work, please cite the original LIAR dataset paper and any referenced works as appropriate, including Wang (2017) and related literature on fake news detection and LLM-based approaches.
+```
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/140402476/41747741-9e5b-4abf-afe0-7091673e45e4/Report_final_04_02_2025.pdf)
