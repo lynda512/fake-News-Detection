@@ -114,30 +114,6 @@ Main dependencies used in the project:
 - Hugging Face `transformers`, `datasets`, and `trl` (for SFTTrainer)  
 - torch
 
-## How to Run
-
-1. Install dependencies:
-
-   ```
-   pip install -r requirements.txt
-   ```
-
-2. Prepare the LIAR dataset (TSV → CSV) and place splits under `data/` as expected by the scripts.
-
-3. Run traditional models:
-
-   ```
-   python src/train_traditional.py
-   ```
-
-4. Run LLaMA 3.2 1B experiments (adjust model path/checkpoint as needed):
-
-   ```
-   python src/train_llama_causallm.py
-   python src/train_llama_seqcls.py
-   ```
-
-5. Inspect metrics and plots in the `results/` and `notebooks/` directories.
 
 ## Citation
 
