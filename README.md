@@ -1,6 +1,6 @@
 
 # Fake News Detection Using Large Language Models
-> This repository contains the implementation of a group project developed for the **Data Science Lab** course, as part of the academic curriculum.
+> This repository contains the implementation of a group project developed for the **Data Science Lab** course, as part of the academic curriculum (The original repository is in the FIMGIT of my university)  and received a final grade of 1.3 .
 
 This repository contains the code and experiments for the project **"Fake News Detection Using Large Language Models"**, which investigates the performance of traditional machine learning models, large language models (LLMs), and hybrid approaches on the **LIAR** dataset for automatic fake news detection.
 This project is a part
