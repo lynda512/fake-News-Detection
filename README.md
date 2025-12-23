@@ -1,7 +1,9 @@
 
 # Fake News Detection Using Large Language Models
+> This repository contains the implementation of a group project developed for the **Data Science Lab** course, as part of the academic curriculum.
 
 This repository contains the code and experiments for the project **"Fake News Detection Using Large Language Models"**, which investigates the performance of traditional machine learning models, large language models (LLMs), and hybrid approaches on the **LIAR** dataset for automatic fake news detection.
+This project is a part
 
 ## Project Overview
 
@@ -100,30 +102,6 @@ Potential future directions include:
 
 - Enhancing interpretability using attention visualization, SHAP/LIME, and human-in-the-loop workflows for sensitive or ambiguous predictions.
 
-## Folder Structure (Suggested)
-
-```
-.
-├── data/
-│   ├── liar_train.csv
-│   ├── liar_val.csv
-│   └── liar_test.csv
-├── notebooks/
-│   ├── eda.ipynb
-│   ├── traditional_models.ipynb
-│   └── llama_experiments.ipynb
-├── src/
-│   ├── preprocessing.py
-│   ├── features.py
-│   ├── train_traditional.py
-│   ├── train_llama_causallm.py
-│   └── train_llama_seqcls.py
-├── results/
-│   ├── metrics_traditional.json
-│   ├── metrics_llama_multiclass.json
-│   └── metrics_llama_binary.json
-└── README.md
-```
 
 ## Requirements
 
@@ -166,4 +144,3 @@ Main dependencies used in the project:
 If you use this work, please cite the original LIAR dataset paper and any referenced works as appropriate, including Wang (2017) and related literature on fake news detection and LLM-based approaches.
 ```
 
-[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/140402476/41747741-9e5b-4abf-afe0-7091673e45e4/Report_final_04_02_2025.pdf)
